@@ -1,106 +1,50 @@
-# Добро пожаловать в проект SkillSwapAPI
+# SkillSwap
 
-## Документация
-[Техническое задание](https://docs.google.com/document/d/1d4o9Sb9o6lxXuqdEgKe4eRlH2s7gKrh0icJ3gyv2FD4/edit?tab=t.0#heading=h.ynonjn54b672) <br>
-[Макет](https://www.figma.com/design/bKwOakHJI7Z2mh2zVCBphP/SkillSwap---Для-разработчиков?node-id=0-1&p=f&t=HH7S4bYwVVtxLM6z-0)
+Платформа для обмена навыками по модели «Учу / Хочу научиться». Пользователи публикуют навыки, которыми готовы делиться, и навыки, которым хотят научиться. Сервис находит взаимно подходящие пары, позволяет отправлять заявки на обмен и вести историю сессий.
 
-## Основные ветки
+## Стек
 
-- `main` — стабильная, протестированная версия приложения (MVP). Прямой пуш запрещён. Мерж осуществляется только после прохождения всех тестов.
-- `dev` — общая ветка разработки. Содержит актуальные изменения и обновляется по завершению недельных итераций.
+- **Frontend:** React, TypeScript, Redux Toolkit, React Router, Feature-Sliced Design (FSD), Vite
+- **Backend:** NestJS, TypeORM, PostgreSQL, JWT (access + refresh), Passport.js, WebSocket
+- **Инфраструктура:** Docker, Jest (Unit + E2E), Swagger
 
----
+## Что реализовано
 
-## Недельный процесс разработки
+### Frontend
+- Архитектура на Feature-Sliced Design (слои `widgets`, `shared/ui`, `entities`).
+- Страница авторизации с валидацией форм через `react-hook-form` и управлением состоянием в `Redux Toolkit`.
+- Компонент `HeaderButtons` (навигация, переключение темы).
+- Работа с избранным: синхронизация карточки навыка с глобальным хранилищем.
+- Рефакторинг UI-компонентов: доступность (`:focus-visible`), адаптивность, устранение багов вёрстки.
 
-Каждая неделя работы оформляется отдельной веткой `weekN`, которая создаётся от `dev`. Эта ветка включает:
+### Backend
+- JWT-авторизация с access и refresh токенами, эндпоинт `POST /auth/refresh`, стратегия `RefreshTokenStrategy`, гарда `RefreshTokenGuard`.
+- Управление профилем: `PATCH /users/me`, `PATCH /users/me/password`.
+- Глобальный фильтр исключений (`AllExceptionFilter`): 404, 409, 413, 500.
+- CRUD категорий с защитой прав администратора (`POST`, `PATCH`, `DELETE /categories`).
+- Сидинг базы данных тестовыми навыками (`seed-skills.ts`).
+- Настройка Jest для Unit- и E2E-тестов (маппинг путей, покрытие ≥70%).
 
-- все инфраструктурные изменения (например, настройку базы данных, логгера, .env),
-- pull request'ы студентов за текущую неделю.
-
-### Шаги:
-
-#### 1. Создание ветки недели (выполняется наставником)
-
-```bash
-git checkout dev
-git pull origin dev
-git checkout -b week1
-git push origin week1
-```
-
-В эту ветку добавляются инфраструктурные изменения. Они могут быть оформлены через отдельный PR или пушем напрямую.
-
-#### 2. Работа студентов
-
-Каждый студент создаёт персональную ветку от `week1`:
+## Запуск
 
 ```bash
-git checkout week1
-git pull origin week1
-git checkout -b week1-username
-git push origin week1-username
-```
+# Клонировать репозиторий
+git clone https://github.com/<username>/skillswap.git
+cd skillswap
 
-Работа выполняется в этой ветке.
+# Установить зависимости (frontend и backend)
+cd client && npm install
+cd ../server && npm install
 
-#### 3. Отправка на проверку
+# Настроить переменные окружения
+cp server/.env.example server/.env
+# заполнить DATABASE_URL, JWT_SECRET, JWT_REFRESH_SECRET и др.
 
-В конце недели создаётся pull request из `week1-username` в `week1`.
+# Запустить базу данных (Docker)
+docker compose up -d db
 
-После прохождения линтера и ревью изменения мержатся в `week1`.
+# Запустить backend
+cd server && npm run start:dev
 
-#### 4. Финальный мерж недели
-
-После завершения всех PR в `week1`, наставник мержит `week1` в `dev`:
-
-```bash
-git checkout dev
-git pull origin dev
-git merge week1
-git push origin dev
-```
-
----
-
-## Политика веток и CI
-
-- Прямой пуш в `main` и `dev` запрещён.
-- Все изменения происходят через pull request'ы.
-- Ветка `main` запускает полный набор проверок:
-  - `lint`
-  - `unit тесты`
-  - `e2e тесты`
-- В остальных ветках запускается только `lint`.
-
----
-
-## CI-проверки
-
-- Для PR в `main` — полный набор тестов.
-- Для всех остальных веток — только линтер (`npm run lint`).
-
----
-
-## Обновление локальных веток
-
-После мержей студенты обновляют свои ветки при необходимости:
-
-```bash
-git checkout week1-username
-git pull origin week1
-```
-
----
-
-## Пример именования веток
-
-- Ветка недели: `week1`
-- Ветка студента: `week1-johndoe`
-
----
-
-## Проверка заданий
-
-- Ревью проводится по pull request'ам в ветку `weekN`.
-- Итоговый merge недели осуществляется наставником в ветку `dev`.
+# Запустить frontend
+cd client && npm run dev
